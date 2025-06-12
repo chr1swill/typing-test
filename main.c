@@ -36,19 +36,42 @@ void cleanup()
 }
 
 static inline
-void putchar_at_offset(size_t offset, char c)
+void putchar_at_offset_white(size_t offset, char c)
 {
   switch (offset)
   {
     case 0:
-      if ((printf("\033[H\033[B%c", c)) == -1)
+      if ((printf("\033[H\033[B\033[97m%c", c)) == -1)
       {
         perror("putchar_at_offset: offset 0");
         exit(EXIT_FAILURE);
       }
     break;
     default:
-      if ((printf("\033[H\033[B\033[%zuC%c", offset, c)) == -1)
+      if ((printf("\033[H\033[B\033[%zuC\033[97m%c",
+           offset, c)) == -1)
+      {
+        perror("putchar_at_offset: offset greater than 0");
+        exit(EXIT_FAILURE);
+      }
+  }
+}
+
+static inline
+void putchar_at_offset_red(size_t offset, char c)
+{
+  switch (offset)
+  {
+    case 0:
+      if ((printf("\033[H\033[B\033[31m%c", c)) == -1)
+      {
+        perror("putchar_at_offset: offset 0");
+        exit(EXIT_FAILURE);
+      }
+    break;
+    default:
+      if ((printf("\033[H\033[B\033[%zuC\033[31m%c",
+           offset, c)) == -1)
       {
         perror("putchar_at_offset: offset greater than 0");
         exit(EXIT_FAILURE);
@@ -82,11 +105,17 @@ main()
       exit(EXIT_FAILURE);
     }
 
-    if (c != s[cur]) continue;
+    if (c != s[cur])
+    {
+      putchar_at_offset_red(cur, c);
+      continue;
+    }
+    else
+    {
+      putchar_at_offset_white(cur, c);
+    }
 
-    putchar_at_offset(cur, c);
     fflush(stdout);
-
     ++cur;
   }
 
