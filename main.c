@@ -55,6 +55,8 @@ void putchar_at_offset_white(size_t offset, char c)
         exit(EXIT_FAILURE);
       }
   }
+
+  fflush(stdout);
 }
 
 static inline
@@ -77,6 +79,8 @@ void putchar_at_offset_red(size_t offset, char c)
         exit(EXIT_FAILURE);
       }
   }
+
+  fflush(stdout);
 }
 
 int 
@@ -114,8 +118,6 @@ main()
       putchar_at_offset_white(cur, c);
       ++cur;
     }
-
-    fflush(stdout);
   }
 
   exit(EXIT_SUCCESS);
