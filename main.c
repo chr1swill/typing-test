@@ -108,15 +108,14 @@ main()
     if (c != s[cur])
     {
       putchar_at_offset_red(cur, c);
-      continue;
     }
     else
     {
       putchar_at_offset_white(cur, c);
+      ++cur;
     }
 
     fflush(stdout);
-    ++cur;
   }
 
   exit(EXIT_SUCCESS);
