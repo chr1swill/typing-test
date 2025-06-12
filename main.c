@@ -83,6 +83,60 @@ void putchar_at_offset_red(size_t offset, char c)
   fflush(stdout);
 }
 
+static inline
+void putchar_at_offset(size_t offset, char c, short bool_is_error)
+{
+  char writebuf[32];
+  char *pointer;
+  size_t slen;
+  int rc;
+  
+  pointer = &writebuf[0];
+
+  #define str "\033[H\033[B"
+  slen = strlen(str);
+  memmove(&pointer, str, slen);
+  pointer += slen;
+  #undef str
+  
+  if (offset != 0)
+  {
+    #define str "\033[%zuC"
+    slen = strlen(str);
+
+    rc = snprintf(pointer, slen, str, offset);
+    if (rc != (int)slen)
+    {
+      perror("putchar_at_offset: snprintf");
+      exit(EXIT_FAILURE);
+    }
+    #undef str
+
+    pointer += slen;
+  }
+
+  if (bool_is_error == 1) //TRUE
+  {
+    #define str "\033[31m"
+    slen = strlen(str);
+
+    memmove(pointer, str, slen);
+    pointer += slen;
+    #undef str
+  }
+  else
+  {
+    #define str "\033[97m"
+    slen = strlen(str);
+
+    memmove(pointer, str, slen);
+    pointer += slen;
+    #undef str
+  }
+  
+  memmove(pointer, &c, 1);
+}
+
 int 
 main()
 {
