@@ -86,55 +86,58 @@ void putchar_at_offset_red(size_t offset, char c)
 static inline
 void putchar_at_offset(size_t offset, char c, short bool_is_error)
 {
-  char writebuf[32];
-  char *pointer;
-  size_t slen;
+  char writebuf[64] = {0};
+  size_t slen, idx;
+  char *str;
   int rc;
   
-  pointer = &writebuf[0];
-
-  #define str "\033[H\033[B"
+  idx = 0;
+  
+  str = "\033\[H\033\[B";
   slen = strlen(str);
-  memmove(&pointer, str, slen);
-  pointer += slen;
-  #undef str
+  memmove(&writebuf[idx], str, slen);
+  idx += slen;
   
   if (offset != 0)
   {
-    #define str "\033[%zuC"
+    str = "\033\[%zuC";
     slen = strlen(str);
 
-    rc = snprintf(pointer, slen, str, offset);
-    if (rc != (int)slen)
+    rc = snprintf(&writebuf[idx], slen, str, offset);
+    if (rc == -1)
     {
       perror("putchar_at_offset: snprintf");
       exit(EXIT_FAILURE);
     }
-    #undef str
 
-    pointer += slen;
+    idx += slen;
   }
 
   if (bool_is_error == 1) //TRUE
   {
-    #define str "\033[31m"
+    str = "\033\[31m";
     slen = strlen(str);
 
-    memmove(pointer, str, slen);
-    pointer += slen;
-    #undef str
+    memmove(&writebuf[idx], str, slen);
+    idx += slen;
   }
   else
   {
-    #define str "\033[97m"
+    str = "\033\[97m";
     slen = strlen(str);
 
-    memmove(pointer, str, slen);
-    pointer += slen;
-    #undef str
+    memmove(&writebuf[idx], str, slen);
+    idx += slen;
   }
   
-  memmove(pointer, &c, 1);
+  memmove(&writebuf[idx], &c, 1);
+
+  n = write(STDOUT_FILENO, &writebuf, slen);
+  if (n != slen)
+  {
+    perror("putchar_at_offset: write"); 
+    exit(EXIT_FAILURE);
+  }
 }
 
 int 
@@ -165,11 +168,11 @@ main()
 
     if (c != s[cur])
     {
-      putchar_at_offset_red(cur, c);
+      putchar_at_offset(cur, c, 1);
     }
     else
     {
-      putchar_at_offset_white(cur, c);
+      putchar_at_offset(cur, c, 0);
       ++cur;
     }
   }
