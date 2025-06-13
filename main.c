@@ -83,63 +83,6 @@ void putchar_at_offset_red(size_t offset, char c)
   fflush(stdout);
 }
 
-static inline
-void putchar_at_offset(size_t offset, char c, short bool_is_error)
-{
-  char writebuf[64] = {0};
-  size_t slen, idx;
-  char *str;
-  int rc;
-  
-  idx = 0;
-  
-  str = "\033\[H\033\[B";
-  slen = strlen(str);
-  memmove(&writebuf[idx], str, slen);
-  idx += slen;
-  
-  if (offset != 0)
-  {
-    str = "\033\[%zuC";
-    slen = strlen(str);
-
-    rc = snprintf(&writebuf[idx], slen, str, offset);
-    if (rc == -1)
-    {
-      perror("putchar_at_offset: snprintf");
-      exit(EXIT_FAILURE);
-    }
-
-    idx += slen;
-  }
-
-  if (bool_is_error == 1) //TRUE
-  {
-    str = "\033\[31m";
-    slen = strlen(str);
-
-    memmove(&writebuf[idx], str, slen);
-    idx += slen;
-  }
-  else
-  {
-    str = "\033\[97m";
-    slen = strlen(str);
-
-    memmove(&writebuf[idx], str, slen);
-    idx += slen;
-  }
-  
-  memmove(&writebuf[idx], &c, 1);
-
-  n = write(STDOUT_FILENO, &writebuf, slen);
-  if (n != slen)
-  {
-    perror("putchar_at_offset: write"); 
-    exit(EXIT_FAILURE);
-  }
-}
-
 int 
 main()
 {
@@ -168,11 +111,11 @@ main()
 
     if (c != s[cur])
     {
-      putchar_at_offset(cur, c, 1);
+      putchar_at_offset_red(cur, c);
     }
     else
     {
-      putchar_at_offset(cur, c, 0);
+      putchar_at_offset_white(cur, c);
       ++cur;
     }
   }
