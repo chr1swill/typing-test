@@ -4,18 +4,16 @@
 #include <unistd.h>
 
 static inline
-void count_linefeed(size_t *counter, char *bytes, size_t bytelen)
+void count_linefeed(size_t *i, size_t *counter, char *bytes, size_t bytelen)
 {
-  size_t i;
-
-  i = 0;
+  *i = 0;
   *counter = 0;
 
-  for (;i < bytelen; ++i)
+  for (;*i < bytelen; ++(*i))
   {
-    switch (bytes[i])
+    switch (bytes[(*i)])
     {
-      case '\n': ++(*counter);
+      case '\n': ++(*counter); break;
       default: continue;
     }
   }
@@ -28,7 +26,37 @@ typedef struct {
 
 void StrSpan_from_linefeed_delim_bytes(StrSpan *sp, char *bytes, size_t byteslen)
 {
-  count_linefeed(&sp->len, bytes, byteslen);
+  size_t i, j;
+  char *cursor;
+
+  count_linefeed(&i, &sp->len, bytes, byteslen);
+
+  sp->strarr = malloc(sizeof(char *) * sp->len);
+  if (sp->strarr == NULL)
+  {
+    perror("StrSpan_from_linefeed_delim_bytes: malloc");
+    exit(EXIT_FAILURE);
+  }
+
+  i = 0;
+  j = 0;
+
+  cursor = &bytes[i];
+  for (;i < byteslen; ++i)
+  {
+    switch (bytes[i])
+    {
+      case '\n': 
+
+        sp->strarr[j] = cursor;
+
+        cursor = &bytes[i+1];
+        bytes[i] = '\0';
+        ++j;
+      break;
+      default: continue;
+    }
+  }
 }
 
 // clean up the stuff inside struct
@@ -69,7 +97,7 @@ int main()
   //}
 
   //fflush(stdout); 
-
+  size_t i;
   StrSpan sp;
 
   StrSpan_from_linefeed_delim_bytes(&sp,
@@ -77,7 +105,14 @@ int main()
 
   printf("sp.len=%ld\n", sp.len);
 
+  i = 0;
+  for (;i < sp.len; ++i)
+  {
+    printf("sp.strarr[%ld]=%s\n", i, sp.strarr[i]);
+  }
+
   // StrSpan_empty(&sp);
+  fflush(stdout); 
   return 0;
 
   //printf("RAND_MAX=%d\n\n", RAND_MAX);
