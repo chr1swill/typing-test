@@ -1,5 +1,5 @@
-//#include <stdlib.h>
-//#include <stdio.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include "american_english.h"
 #include <unistd.h>
 
@@ -9,24 +9,39 @@ void count_linefeed(size_t *counter, char *bytes, size_t bytelen)
   size_t i;
 
   i = 0;
-  *strarr_len = 0;
+  *counter = 0;
 
-  for (;i < bytesteam_len; ++i)
+  for (;i < bytelen; ++i)
   {
-    switch (bytestream[i])
+    switch (bytes[i])
     {
-      case '\n': ++(*strarr_len);
+      case '\n': ++(*counter);
       default: continue;
     }
   }
 }
 
-char **strarr_from_linefeed_bytestream(size_t *strarr_len,
-                                        char *bytes,
-                                        size_t byteslen)
+typedef struct {
+  char **strarr;
+  size_t len;
+} StrSpan;
+
+void StrSpan_from_linefeed_delim_bytes(StrSpan *sp, char *bytes, size_t byteslen)
 {
-  void count_linefeed(strarr_len, bytes, byteslen)
-  
+  count_linefeed(&sp->len, bytes, byteslen);
+}
+
+// clean up the stuff inside struct
+// but you take care of the struct
+// since you are responsible for providing it (allocating)
+static inline
+void StrSpan_empty(StrSpan *sp)
+{
+  while (sp->len != 0)
+  {
+    --sp->len;
+    free(sp->strarr[sp->len]);
+  }
 }
 
 int main()
@@ -55,7 +70,14 @@ int main()
 
   //fflush(stdout); 
 
-  write(STDOUT_FILENO, &american_english, american_english_len);
+  StrSpan sp;
+
+  StrSpan_from_linefeed_delim_bytes(&sp,
+    american_english, american_english_len);
+
+  printf("sp.len=%ld\n", sp.len);
+
+  // StrSpan_empty(&sp);
   return 0;
 
   //printf("RAND_MAX=%d\n\n", RAND_MAX);
