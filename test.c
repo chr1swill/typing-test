@@ -66,11 +66,7 @@ void StrSpan_from_linefeed_delim_bytes(StrSpan *sp, char *bytes, size_t byteslen
 static inline
 void StrSpan_empty(StrSpan *sp)
 {
-  while (sp->len != 0)
-  {
-    --sp->len;
-    free(sp->strarr[sp->len]);
-  }
+  free(sp->strarr);
 }
 
 int main(int argc, char **argv)
@@ -79,14 +75,11 @@ int main(int argc, char **argv)
   size_t i;
   StrSpan sp;
 
-
   if (argc < 2)
   {
     printf("brother fix that\n");
     return 1;
   }
-
-  //const char *input_words_in_test = argv[1];
 
   i = atol(argv[1]);
   printf("words_in_test as number=%ld\n", i);
@@ -113,27 +106,6 @@ int main(int argc, char **argv)
   }
 
   fflush(stdout); 
-  // StrSpan_empty(&sp);
+  StrSpan_empty(&sp);
   return 0;
-
-
-  //r = rand();
-  //printf("%d\n", r);
-
-  //r = rand();
-  //printf("%d\n", r);
-
-  //r = rand();
-  //printf("%d\n", r);
-
-  //r = rand();
-  //printf("%d\n", r);
-
-  //r = rand();
-  //printf("%d\n", r);
-
-  //r = rand();
-  //printf("%d\n", r);
-
-  //return 0;
 }
