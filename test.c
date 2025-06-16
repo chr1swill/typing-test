@@ -1,7 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "american_english.h"
 #include <unistd.h>
+#include <time.h>
+#include "american_english.h"
 
 static inline
 void count_linefeed(size_t *i, size_t *counter, char *bytes, size_t bytelen)
@@ -96,6 +97,8 @@ int main(int argc, char **argv)
   StrSpan_from_linefeed_delim_bytes(&sp,
     american_english, american_english_len);
   printf("sp.len=%ld\n", sp.len);
+
+  srand(time(NULL) - randoz_len);
 
   i = 0;
   for (; i < randoz_len; ++i)
