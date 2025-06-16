@@ -72,50 +72,47 @@ void StrSpan_empty(StrSpan *sp)
   }
 }
 
-int main()
+int main(int argc, char **argv)
 {
-  //int r, words_in_test;
-
-  //if (argc < 2)
-  //{
-  //  printf("brother fix that\n");
-  //  return 1;
-  //}
-
-  //const char *input_words_in_test = argv[1];
-
-  //words_in_test = atoi(input_words_in_test);
-  //printf("words_in_test as number=%d\n", words_in_test);
-  //
-  //int randoz[words_in_test];
-  //const size_t randoz_len = words_in_test;
-
-  //for (words_in_test = 0; words_in_test < randoz_len; ++words_in_test)
-  //{
-  //  randoz[words_in_test] = rand();
-  //  printf("%d:%d\n", words_in_test, randoz[words_in_test]);
-  //}
-
-  //fflush(stdout); 
+  int r;
   size_t i;
   StrSpan sp;
 
+
+  if (argc < 2)
+  {
+    printf("brother fix that\n");
+    return 1;
+  }
+
+  //const char *input_words_in_test = argv[1];
+
+  i = atol(argv[1]);
+  printf("words_in_test as number=%ld\n", i);
+  
+  int randoz[i];
+  const size_t randoz_len = i;
+
   StrSpan_from_linefeed_delim_bytes(&sp,
     american_english, american_english_len);
-
   printf("sp.len=%ld\n", sp.len);
 
   i = 0;
-  for (;i < sp.len; ++i)
+  for (; i < randoz_len; ++i)
   {
-    printf("sp.strarr[%ld]=%s\n", i, sp.strarr[i]);
+    randoz[i] = rand() % (sp.len - 1);
   }
 
-  // StrSpan_empty(&sp);
+  i = 0;
+  for (;i < randoz_len; ++i)
+  {
+    printf("sp.strarr[%d]=%s\n", randoz[i], sp.strarr[randoz[i]]);
+  }
+
   fflush(stdout); 
+  // StrSpan_empty(&sp);
   return 0;
 
-  //printf("RAND_MAX=%d\n\n", RAND_MAX);
 
   //r = rand();
   //printf("%d\n", r);
