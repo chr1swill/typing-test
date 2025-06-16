@@ -4,6 +4,7 @@
 #include <string.h>
 #include <errno.h>
 #include <termios.h>
+#include "american_english.h" 
 
 #define clscn()                                               \
 do {                                                          \

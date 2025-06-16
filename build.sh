@@ -3,7 +3,7 @@
 set -xe
 
 outdir="bin"
-cflags="-Wall -Wextra -ggdb"
+cflags="-Wall -Wextra -ggdb -static"
 
 if [ -d $outdir ]; then 
   rm -rf $outdir
