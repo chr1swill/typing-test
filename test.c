@@ -1,5 +1,7 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include <time.h>
 #include "american_english.h"
@@ -69,11 +71,73 @@ void StrSpan_empty(StrSpan *sp)
   free(sp->strarr);
 }
 
+typedef struct
+{
+  char *bytes;
+  size_t len;
+} Span;
+
+static inline
+void Span_make(Span *span, size_t len)
+{
+  span->bytes = malloc(sizeof(char) * len);
+  if (span->bytes == NULL)
+  {
+    perror("Span_new: malloc");
+    exit(EXIT_FAILURE);
+  }
+  memset(span->bytes, 0, len);
+
+  span->len = len;
+}
+
+static inline
+void Span_free(Span *span)
+{
+  free(span->bytes);
+}
+
+// user allocated, uninited Span
+// full StrSpan
+static inline
+void make_wordlist(Span *span, StrSpan *ss,
+                   int *randnums, size_t randnums_len)
+{
+  size_t i; 
+  char *str;
+  char *cursor;
+
+  i = 0;
+  for (;i < randnums_len; ++i)
+  {
+    span->len += strlen(ss->strarr[randnums[i]]);
+  }
+
+  // for the spaces in between words
+  span->len += (randnums_len - 1); 
+
+  Span_make(span, span->len);
+  printf("span->len=%ld\n", span->len);
+
+  i = 0;
+  cursor = &span->bytes[0]; 
+  for (;i < randnums_len; ++i)
+  {
+    str = ss->strarr[randnums[i]];
+
+    memmove(cursor, str, strlen(str)); 
+    cursor += strlen(str) + 1;
+  }
+
+  assert(span->len == (cursor - span->bytes) - 1);
+} 
+
 int main(int argc, char **argv)
 {
   int r;
   size_t i;
-  StrSpan sp;
+  StrSpan ss;
+  Span s;
 
   if (argc < 2)
   {
@@ -87,25 +151,24 @@ int main(int argc, char **argv)
   int randoz[i];
   const size_t randoz_len = i;
 
-  StrSpan_from_linefeed_delim_bytes(&sp,
+  StrSpan_from_linefeed_delim_bytes(&ss,
     american_english, american_english_len);
-  printf("sp.len=%ld\n", sp.len);
+  printf("ss.len=%ld\n", ss.len);
 
   srand(time(NULL) - randoz_len);
 
   i = 0;
   for (; i < randoz_len; ++i)
   {
-    randoz[i] = rand() % (sp.len - 1);
+    randoz[i] = rand() % (ss.len - 1);
   }
 
-  i = 0;
-  for (;i < randoz_len; ++i)
-  {
-    printf("sp.strarr[%d]=%s\n", randoz[i], sp.strarr[randoz[i]]);
-  }
+  make_wordlist(&s, &ss, randoz, randoz_len);
 
+  write(STDOUT_FILENO, s.bytes, s.len);
   fflush(stdout); 
-  StrSpan_empty(&sp);
+
+  StrSpan_empty(&ss);
+  Span_free(&s);
   return 0;
 }
