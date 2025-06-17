@@ -6,6 +6,15 @@
 #include <time.h>
 #include "american_english.h"
 
+#define usage() \
+do { \
+  printf("usage: %s [number of words in test]\n"        \
+          "example: %s 4 // creates a 4 word test\n"    \
+          "exmaple: %s 50 // creates a 50 word test\n", \
+          argv[0], argv[0], argv[0]);                   \
+  exit(EXIT_FAILURE);                                   \
+} while(0); \
+
 typedef struct {
   char **strarr;
   size_t len;
@@ -87,7 +96,7 @@ void Span_make(Span *span, size_t len, char c)
   span->bytes = malloc(sizeof(char) * len);
   if (span->bytes == NULL)
   {
-    perror("Span_new: malloc");
+    perror("Span_make: malloc");
     exit(EXIT_FAILURE);
   }
   memset(span->bytes, c, len);
@@ -110,6 +119,7 @@ void make_wordlist(Span *span, StrSpan *ss,
   char *cursor;
 
   i = 0;
+  span->len = 0;
   for (;i < randnums_len; ++i)
   {
     span->len += strlen(ss->strarr[randnums[i]]);
@@ -133,14 +143,25 @@ void make_wordlist(Span *span, StrSpan *ss,
   assert(span->len == (cursor - span->bytes));
 } 
 
-#define usage() \
-do { \
-  printf("usage: %s [number of words in test]\n"        \
-          "example: %s 4 // creates a 4 word test\n"    \
-          "exmaple: %s 50 // creates a 50 word test\n", \
-          argv[0], argv[0], argv[0]);                   \
-  exit(EXIT_FAILURE);                                   \
-} while(0); \
+static inline
+void gen_random_wordlist(Span *s, StrSpan *ss, size_t *n_words)
+{
+  const size_t randoz_len = *n_words;
+  int randoz[randoz_len];
+
+  StrSpan_from_linefeed_delim_bytes(ss,
+    american_english, american_english_len);
+
+  srand(time(NULL) - randoz_len);
+
+  *n_words = 0;
+  for (; *n_words < randoz_len; ++(*n_words))
+  {
+    randoz[(*n_words)] = rand() % (ss->len - 1);
+  }
+
+  make_wordlist(s, ss, randoz, randoz_len);
+}
 
 int main(int argc, char **argv)
 {
@@ -158,22 +179,8 @@ int main(int argc, char **argv)
   {
     usage();
   }
-  
-  const size_t randoz_len = i;
-  int randoz[randoz_len];
 
-  StrSpan_from_linefeed_delim_bytes(&ss,
-    american_english, american_english_len);
-
-  srand(time(NULL) - randoz_len);
-
-  i = 0;
-  for (; i < randoz_len; ++i)
-  {
-    randoz[i] = rand() % (ss.len - 1);
-  }
-
-  make_wordlist(&s, &ss, randoz, randoz_len);
+  gen_random_wordlist(&s, &ss, &i);
 
   write(STDOUT_FILENO, s.bytes, s.len);
   fflush(stdout); 
