@@ -114,11 +114,9 @@ void make_wordlist(Span *span, StrSpan *ss,
   }
 
   // for the spaces in between words
-  //span->len += (randnums_len - 1); 
   span->len += randnums_len; 
 
   Span_make(span, span->len, ' ');
-  //printf("span->len=%ld\n", span->len);
 
   i = 0;
   cursor = &span->bytes[0]; 
@@ -129,14 +127,6 @@ void make_wordlist(Span *span, StrSpan *ss,
 
     memmove(cursor, str, str_len); 
     cursor += str_len + 1;
-    // if (i != randnums_len)
-    // {
-    //   cursor += str_len + 1;
-    // }
-    // else
-    // {
-    //   cursor[str_len + 1] = '\n';
-    // }
   }
 
   span->bytes[span->len - 1] = '\n';
@@ -170,15 +160,12 @@ int main(int argc, char **argv)
   {
     usage();
   }
-
-  //printf("words_in_test as number=%ld\n", i);
   
   int randoz[i];
   const size_t randoz_len = i;
 
   StrSpan_from_linefeed_delim_bytes(&ss,
     american_english, american_english_len);
-  //printf("ss.len=%ld\n", ss.len);
 
   srand(time(NULL) - randoz_len);
 
