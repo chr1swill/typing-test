@@ -6,8 +6,31 @@
 #include <time.h>
 #include "american_english.h"
 
+typedef struct {
+  char **strarr;
+  size_t len;
+} StrSpan;
+
 static inline
-void count_linefeed(size_t *i, size_t *counter, char *bytes, size_t bytelen)
+void StrSpan_make(StrSpan *ss)
+{
+  ss->strarr = malloc(sizeof(char *) * ss->len);
+  if (ss->strarr == NULL)
+  {
+    perror("StrSpan_make: malloc");
+    exit(EXIT_FAILURE);
+  }
+}
+
+static inline
+void StrSpan_empty(StrSpan *sp)
+{
+  free(sp->strarr);
+}
+
+static inline
+void count_linefeed(size_t *i, size_t *counter,
+                    char *bytes, size_t bytelen)
 {
   *i = 0;
   *counter = 0;
@@ -22,24 +45,14 @@ void count_linefeed(size_t *i, size_t *counter, char *bytes, size_t bytelen)
   }
 }
 
-typedef struct {
-  char **strarr;
-  size_t len;
-} StrSpan;
-
-void StrSpan_from_linefeed_delim_bytes(StrSpan *sp, char *bytes, size_t byteslen)
+void StrSpan_from_linefeed_delim_bytes(StrSpan *ss,
+                                        char *bytes, size_t byteslen)
 {
   size_t i, j;
   char *cursor;
 
-  count_linefeed(&i, &sp->len, bytes, byteslen);
-
-  sp->strarr = malloc(sizeof(char *) * sp->len);
-  if (sp->strarr == NULL)
-  {
-    perror("StrSpan_from_linefeed_delim_bytes: malloc");
-    exit(EXIT_FAILURE);
-  }
+  count_linefeed(&i, &ss->len, bytes, byteslen);
+  StrSpan_make(ss);
 
   i = 0;
   j = 0;
@@ -51,7 +64,7 @@ void StrSpan_from_linefeed_delim_bytes(StrSpan *sp, char *bytes, size_t byteslen
     {
       case '\n': 
 
-        sp->strarr[j] = cursor;
+        ss->strarr[j] = cursor;
 
         cursor = &bytes[i+1];
         bytes[i] = '\0';
@@ -60,15 +73,6 @@ void StrSpan_from_linefeed_delim_bytes(StrSpan *sp, char *bytes, size_t byteslen
       default: continue;
     }
   }
-}
-
-// clean up the stuff inside struct
-// but you take care of the struct
-// since you are responsible for providing it (allocating)
-static inline
-void StrSpan_empty(StrSpan *sp)
-{
-  free(sp->strarr);
 }
 
 typedef struct
@@ -97,8 +101,6 @@ void Span_free(Span *span)
   free(span->bytes);
 }
 
-// user allocated, uninited Span
-// full StrSpan
 static inline
 void make_wordlist(Span *span, StrSpan *ss,
                    int *randnums, size_t randnums_len)
@@ -113,9 +115,7 @@ void make_wordlist(Span *span, StrSpan *ss,
     span->len += strlen(ss->strarr[randnums[i]]);
   }
 
-  // for the spaces in between words
   span->len += randnums_len; 
-
   Span_make(span, span->len, ' ');
 
   i = 0;
@@ -130,7 +130,6 @@ void make_wordlist(Span *span, StrSpan *ss,
   }
 
   span->bytes[span->len - 1] = '\n';
-
   assert(span->len == (cursor - span->bytes));
 } 
 
@@ -145,7 +144,6 @@ do { \
 
 int main(int argc, char **argv)
 {
-  int r;
   size_t i;
   StrSpan ss;
   Span s;
@@ -161,8 +159,8 @@ int main(int argc, char **argv)
     usage();
   }
   
-  int randoz[i];
   const size_t randoz_len = i;
+  int randoz[randoz_len];
 
   StrSpan_from_linefeed_delim_bytes(&ss,
     american_english, american_english_len);
