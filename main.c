@@ -16,9 +16,6 @@ do {                                                          \
   }                                                           \
 } while(0);                                                   \
 
-static char *s, c;
-static size_t sl, n, cur;
-
 static inline 
 void setrawmode(struct termios *oldt, struct termios *newt)
 {
@@ -92,7 +89,10 @@ void putchar_at_offset_red(struct termios *oldt, size_t offset, char c)
 
 int main()
 {
+  char *s, c;
+  size_t sl, n, cur;
   struct termios oldt, newt;
+
 
   setrawmode(&oldt, &newt);
 
