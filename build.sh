@@ -11,4 +11,4 @@ fi
 
 mkdir -p $outdir
 
-gcc -o ${outdir}/main main.c render.c $cflags
+gcc -o ${outdir}/main main.c render.c wordlist.c $cflags

@@ -22,16 +22,13 @@ typedef struct {
   size_t len;
 } StrSpan;
  
-static inline
 void StrSpan_make(StrSpan *ss);
 
 void StrSpan_free(StrSpan *sp);
 
-static inline
 void count_linefeed(size_t *i, size_t *counter,
                     char *bytes, size_t bytelen);
 
-static inline
 void StrSpan_from_linefeed_delim_bytes(StrSpan *ss,
                                        char *bytes, size_t byteslen);
 typedef struct
@@ -40,12 +37,10 @@ typedef struct
   size_t len;
 } Span;
 
-static inline
 void Span_make(Span *span, size_t len, char c);
 
 void Span_free(Span *span);
 
-static inline
 void make_wordlist(Span *span, StrSpan *ss,
                    int *randnums, size_t randnums_len);
 
