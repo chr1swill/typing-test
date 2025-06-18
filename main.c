@@ -18,26 +18,32 @@ do {                                                          \
 
 static char *s, c;
 static size_t sl, n, cur;
-static struct termios oldt, newt;
 
 static inline 
-void setrawmode()
+void setrawmode(struct termios *oldt, struct termios *newt)
 {
-  tcgetattr(STDIN_FILENO, &oldt);    
-  newt = oldt;
+  tcgetattr(STDIN_FILENO, oldt);
+  *newt = *oldt;
 
-  newt.c_lflag &= ~(ICANON | ECHO);
-  tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-}
-
-void cleanup()
-{
-  putchar('\n');
-  tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+  newt->c_lflag &= ~(ICANON | ECHO);
+  tcsetattr(STDIN_FILENO, TCSANOW, newt);
 }
 
 static inline
-void putchar_at_offset_white(size_t offset, char c)
+void cleanup(struct termios *oldt)
+{
+  tcsetattr(STDIN_FILENO, TCSANOW, oldt);
+}
+static inline
+void clean_on_exit(struct termios *oldt, int status)
+{
+  putchar('\n');
+  cleanup(oldt);
+  exit(status);
+}
+
+static inline
+void putchar_at_offset_white(struct termios *oldt, size_t offset, char c)
 {
   switch (offset)
   {
@@ -45,7 +51,7 @@ void putchar_at_offset_white(size_t offset, char c)
       if ((printf("\033[H\033[B\033[97m%c", c)) == -1)
       {
         perror("putchar_at_offset: offset 0");
-        exit(EXIT_FAILURE);
+        clean_on_exit(oldt, EXIT_FAILURE);
       }
     break;
     default:
@@ -53,7 +59,7 @@ void putchar_at_offset_white(size_t offset, char c)
            offset, c)) == -1)
       {
         perror("putchar_at_offset: offset greater than 0");
-        exit(EXIT_FAILURE);
+        clean_on_exit(oldt, EXIT_FAILURE);
       }
   }
 
@@ -61,7 +67,7 @@ void putchar_at_offset_white(size_t offset, char c)
 }
 
 static inline
-void putchar_at_offset_red(size_t offset, char c)
+void putchar_at_offset_red(struct termios *oldt, size_t offset, char c)
 {
   switch (offset)
   {
@@ -69,7 +75,7 @@ void putchar_at_offset_red(size_t offset, char c)
       if ((printf("\033[H\033[B\033[31m%c", c)) == -1)
       {
         perror("putchar_at_offset: offset 0");
-        exit(EXIT_FAILURE);
+        clean_on_exit(oldt, EXIT_FAILURE);
       }
     break;
     default:
@@ -77,18 +83,18 @@ void putchar_at_offset_red(size_t offset, char c)
            offset, c)) == -1)
       {
         perror("putchar_at_offset: offset greater than 0");
-        exit(EXIT_FAILURE);
+        clean_on_exit(oldt, EXIT_FAILURE);
       }
   }
 
   fflush(stdout);
 }
 
-int 
-main()
+int main()
 {
-  atexit(cleanup);
-  setrawmode();
+  struct termios oldt, newt;
+
+  setrawmode(&oldt, &newt);
 
   clscn();
 
@@ -96,7 +102,9 @@ main()
   sl = strlen(s);
 
   n = write(STDOUT_FILENO, s, sl);
-  if (n != sl) exit(EXIT_FAILURE);
+  if (n != sl) {
+    clean_on_exit(&oldt, EXIT_FAILURE);
+  }
 
   cur = 0;
 
@@ -107,19 +115,19 @@ main()
     n = read(STDIN_FILENO, &c, 1);
     if (n != 1) {
       perror("read STDIN");
-      exit(EXIT_FAILURE);
+      clean_on_exit(&oldt, EXIT_FAILURE);
     }
 
     if (c != s[cur])
     {
-      putchar_at_offset_red(cur, c);
+      putchar_at_offset_red(&oldt, cur, c);
     }
     else
     {
-      putchar_at_offset_white(cur, c);
+      putchar_at_offset_white(&oldt, cur, c);
       ++cur;
     }
   }
 
-  exit(EXIT_SUCCESS);
+  clean_on_exit(&oldt, EXIT_SUCCESS);
 }
