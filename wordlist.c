@@ -1,6 +1,7 @@
 #include "american_english.h"
 #include "wordlist.h"
 
+static inline
 void StrSpan_make(StrSpan *ss)
 {
   ss->strarr = malloc(sizeof(char *) * ss->len);
@@ -11,11 +12,12 @@ void StrSpan_make(StrSpan *ss)
   }
 }
 
-void StrSpan_empty(StrSpan *sp)
+void StrSpan_free(StrSpan *sp)
 {
   free(sp->strarr);
 }
 
+static inline
 void count_linefeed(size_t *i, size_t *counter,
                     char *bytes, size_t bytelen)
 {
@@ -32,6 +34,7 @@ void count_linefeed(size_t *i, size_t *counter,
   }
 }
 
+static inline
 void StrSpan_from_linefeed_delim_bytes(StrSpan *ss,
                                         char *bytes, size_t byteslen)
 {
@@ -62,6 +65,7 @@ void StrSpan_from_linefeed_delim_bytes(StrSpan *ss,
   }
 }
 
+static inline
 void Span_make(Span *span, size_t len, char c)
 {
   span->bytes = malloc(sizeof(char) * len);
@@ -80,6 +84,7 @@ void Span_free(Span *span)
   free(span->bytes);
 }
 
+static inline
 void make_wordlist(Span *span, StrSpan *ss,
                    int *randnums, size_t randnums_len)
 {

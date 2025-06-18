@@ -22,7 +22,7 @@ int main(int argc, char **argv)
   write(STDOUT_FILENO, s.bytes, s.len);
   fflush(stdout); 
 
-  StrSpan_empty(&ss);
+  StrSpan_free(&ss);
   Span_free(&s);
   return 0;
 }
