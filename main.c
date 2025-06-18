@@ -2,7 +2,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "american_english.h" 
 #include "render.h"
 
 int main()
